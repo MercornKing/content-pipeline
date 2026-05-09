@@ -42,7 +42,56 @@ const ARTICLES = [
     topic: 'coaching',
     excerpt: 'Calendly, Acuity, or Tidycal? A straight-talking guide for coaches who want clients to book without the back-and-forth.',
     date: '2026-05-09',
+  },,
+  {
+    slug: 'best-accounting-software-for-sole-traders-uk',
+    title: 'Best Accounting Software For Sole Traders Uk',
+    topic: 'finance',
+    excerpt: "Best Accounting Software for Sole Traders UK (2026 Guide)",
+    date: '2026-05-09',
   },
+  {
+    slug: 'best-invoicing-software-for-small-business-uk',
+    title: 'Best Invoicing Software For Small Business Uk',
+    topic: 'finance',
+    excerpt: "Best Invoicing Software for Small Business UK (2026 Guide)",
+    date: '2026-05-09',
+  },
+  {
+    slug: 'best-project-management-tools-for-freelancers',
+    title: 'Best Project Management Tools For Freelancers',
+    topic: 'productivity',
+    excerpt: "Best Project Management Tools for Freelancers (2026 UK Guide)",
+    date: '2026-05-09',
+  },
+  {
+    slug: 'canva-pro-review-is-the-upgrade-worth-it',
+    title: 'Canva Pro Review Is The Upgrade Worth It',
+    topic: 'general',
+    excerpt: "Canva Pro review — is the upgrade worth it?",
+    date: '2026-05-09',
+  },
+  {
+    slug: 'freshbooks-vs-quickbooks-for-freelancers',
+    title: 'Freshbooks Vs Quickbooks For Freelancers',
+    topic: 'finance',
+    excerpt: "FreshBooks vs QuickBooks for Freelancers (2026 UK Guide)",
+    date: '2026-05-09',
+  },
+  {
+    slug: 'monday-vs-asana-for-small-teams',
+    title: 'Monday Vs Asana For Small Teams',
+    topic: 'productivity',
+    excerpt: "Monday.com vs Asana for Small Teams (2026 UK Guide)",
+    date: '2026-05-09',
+  },
+  {
+    slug: 'notion-vs-obsidian-for-note-taking',
+    title: 'Notion Vs Obsidian For Note Taking',
+    topic: 'productivity',
+    excerpt: "Notion vs Obsidian for Note-Taking (2026 Guide)",
+    date: '2026-05-09',
+  }
 ];
 
 // ── Topic registry ────────────────────────────────────────────────────────────
