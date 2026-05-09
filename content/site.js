@@ -164,7 +164,7 @@ async function openArticle(slug, pushState = true) {
   renderArticleSidebar();
 
   try {
-    const res = await fetch(`/${slug}.md`);
+    const res = await fetch(`./${slug}.md`);
     if (!res.ok) throw new Error(res.status);
     let md = await res.text();
     md = stripFrontmatter(md);
