@@ -1,0 +1,20 @@
+# netlify.toml — WorkSmart Reviews
+# Publish directory is /content (site files)
+# /articles is served as a separate asset path
+
+[build]
+  publish = "content"
+
+# Serve .md files from /articles so the JS can fetch them
+[[headers]]
+  for = "/articles/*.md"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Access-Control-Allow-Origin = "*"
+
+# Serve all other assets normally
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
