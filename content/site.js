@@ -164,7 +164,7 @@ async function openArticle(slug, pushState = true) {
   renderArticleSidebar();
 
   try {
-    const res = await fetch(`${slug}.md`);
+    const res = await fetch(`/${slug}.md`);
     if (!res.ok) throw new Error(res.status);
     let md = await res.text();
     md = stripFrontmatter(md);
@@ -232,7 +232,11 @@ function setTopic(key) {
   document.querySelectorAll('.topic-btn').forEach(b => {
     b.classList.toggle('active', b.textContent === TOPICS[key]?.label);
   });
-  if (state.view === 'home') renderArticleGrid();
+  if (state.view !== 'home') {
+    navigate('#');
+  } else {
+    renderArticleGrid();
+  }
 }
 
 // ── Sidebar topics ────────────────────────────────────────────────────────────
