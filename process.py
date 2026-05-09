@@ -179,7 +179,7 @@ def update_site_js(slug, title, topic, excerpt, date):
     # Find the closing ]; of the ARTICLES array and insert before it
     updated = re.sub(
         r"(const ARTICLES\s*=\s*\[)([\s\S]*?)(\];)",
-        lambda m: m.group(1) + m.group(2).rstrip("\n") + ",\n" + new_entry + "\n];",
+        lambda m: m.group(1) + m.group(2).rstrip(",\n ") + ",\n" + new_entry + "\n];",
         js_text
     )
 

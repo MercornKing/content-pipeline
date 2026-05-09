@@ -43,63 +43,8 @@ const ARTICLES = [
     excerpt: 'Calendly, Acuity, or Tidycal? A straight-talking guide for coaches who want clients to book without the back-and-forth.',
     date: '2026-05-09',
   },
-  {
-    slug: 'best-accounting-software-for-sole-traders-uk',
-    title: 'Best Accounting Software for Sole Traders UK',
-    topic: 'finance',
-    excerpt: 'Xero, QuickBooks, or FreeAgent? An honest guide to accounting software for UK sole traders — with real pricing and no jargon.',
-    date: '2026-05-09',
-  },
-  {
-    slug: 'best-invoicing-software-for-small-business-uk',
-    title: 'Best Invoicing Software for Small Business UK',
-    topic: 'finance',
-    excerpt: 'Stop chasing payments with spreadsheets. The best invoicing tools for UK small businesses — compared on features, price, and ease of use.',
-    date: '2026-05-09',
-  },
-  {
-    slug: 'best-project-management-tools-for-freelancers',
-    title: 'Best Project Management Tools for Freelancers',
-    topic: 'productivity',
-    excerpt: 'When it\'s just you managing multiple clients, the right project management tool makes all the difference. Here\'s what actually works.',
-    date: '2026-05-09',
-  },
-  {
-    slug: 'canva-pro-review-is-the-upgrade-worth-it',
-    title: 'Canva Pro Review: Is the Upgrade Worth It?',
-    topic: 'marketing',
-    excerpt: 'Canva\'s free plan is genuinely useful. But is Pro worth £10.99 a month for a small business? An honest look at what you actually get.',
-    date: '2026-05-09',
-  },
-  {
-    slug: 'freshbooks-vs-quickbooks-for-freelancers',
-    title: 'FreshBooks vs QuickBooks for Freelancers',
-    topic: 'finance',
-    excerpt: 'Two of the most popular accounting tools for freelancers — but they suit very different working styles. Here\'s how to choose.',
-    date: '2026-05-09',
-  },
-  {
-    slug: 'monday-vs-asana-for-small-teams',
-    title: 'Monday.com vs Asana for Small Teams',
-    topic: 'productivity',
-    excerpt: 'Both promise to fix your workflow. Monday.com is more flexible; Asana is more focused. Which one is actually right for a small team?',
-    date: '2026-05-09',
-  },
-  {
-    slug: 'notion-vs-obsidian-for-note-taking',
-    title: 'Notion vs Obsidian for Note-Taking',
-    topic: 'productivity',
-    excerpt: 'Notion is collaborative and structured. Obsidian is private and powerful. The right choice depends on how your brain works.',
-    date: '2026-05-09',
-  },,
-  {
-    slug: 'cheaper-alternatives-to-monday-com',
-    title: 'Cheaper Alternatives to Monday.com for UK Small Teams',
-    topic: 'productivity',
-    excerpt: 'Monday.com is polished but pricey. These alternatives deliver the same core features for significantly less — some for free.',
-    date: '2026-05-09',
-  },,
 ];
+
 // ── Topic registry ────────────────────────────────────────────────────────────
 // AI MAINTENANCE: Add new topics here as the article library grows.
 
@@ -185,7 +130,7 @@ function renderArticleGrid() {
 }
 
 function getFilteredArticles() {
-  return ARTICLES.filter(a => {
+  return ARTICLES.filter(a => a && a.slug).filter(a => {
     const matchTopic = state.topic === 'all' || a.topic === state.topic;
     const q = state.search.toLowerCase();
     const matchSearch = !q || a.title.toLowerCase().includes(q) || a.excerpt.toLowerCase().includes(q);
@@ -195,7 +140,7 @@ function getFilteredArticles() {
 
 // ── Article view ──────────────────────────────────────────────────────────────
 async function openArticle(slug, pushState = true) {
-  const meta = ARTICLES.find(a => a.slug === slug);
+  const meta = ARTICLES.filter(a => a && a.slug).find(a => a.slug === slug);
   if (!meta) { showHome(); return; }
 
   state.view = 'article';
@@ -263,7 +208,7 @@ function renderArticleSidebar() {
       <h3>Browse topics</h3>
       <ul class="topic-list">
         ${Object.entries(TOPICS).filter(([k])=>k!=='all').map(([key, t]) => {
-          const count = ARTICLES.filter(a => a.topic === key).length;
+          const count = ARTICLES.filter(a => a && a.slug && a.topic === key).length;
           return count ? `<li>
             <button onclick="navigate('#');setTimeout(()=>setTopic('${key}'),50)">${t.label}</button>
             <span class="topic-count">${count}</span>
@@ -307,7 +252,7 @@ function renderSidebarTopics() {
       <h3>Browse topics</h3>
       <ul class="topic-list">
         ${Object.entries(TOPICS).filter(([k])=>k!=='all').map(([key, t]) => {
-          const count = ARTICLES.filter(a => a.topic === key).length;
+          const count = ARTICLES.filter(a => a && a.slug && a.topic === key).length;
           return count ? `<li>
             <button onclick="setTopic('${key}')">${t.label}</button>
             <span class="topic-count">${count}</span>
