@@ -105,6 +105,13 @@ const ARTICLES = [
     topic: 'general',
     excerpt: "Best Time Tracking Apps for Remote Teams (2026 UK Guide)",
     date: '2026-05-09',
+  },
+  {
+    slug: 'freshbooks-review-for-sole-traders',
+    title: 'Freshbooks Review For Sole Traders',
+    topic: 'finance',
+    excerpt: "FreshBooks Review for Sole Traders UK (2026)",
+    date: '2026-05-09',
   }
 ];
 
