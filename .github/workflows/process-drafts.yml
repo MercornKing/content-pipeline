@@ -3,21 +3,20 @@ name: Process Drafts
 on:
   push:
     paths:
-      - "drafts/**.docx"          # triggers only when a .docx lands in /drafts
-      - "affiliate_links.json"    # or when you update your links
-  workflow_dispatch:              # allows manual trigger from GitHub UI
+      - "drafts/**.docx"
+      - "affiliate_links.json"
+  workflow_dispatch:
     inputs:
       force:
-        description: "Reprocess all files (even existing ones)"
+        description: "Reprocess all files"
         required: false
         default: "false"
 
 jobs:
   process:
     runs-on: ubuntu-latest
-
     permissions:
-      contents: write             # needed to commit processed files back
+      contents: write
 
     steps:
       - name: Checkout repo
@@ -39,11 +38,11 @@ jobs:
             python process.py
           fi
 
-      - name: Commit processed files
+      - name: Commit output
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add content/
-          git diff --cached --quiet && echo "No changes to commit" && exit 0
-          git commit -m "chore: process drafts [skip ci]"
+          git add articles/ content/site.js
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "chore: publish new article [skip ci]"
           git push
