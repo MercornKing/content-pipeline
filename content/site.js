@@ -94,11 +94,11 @@ const ARTICLES = [
   },,
   {
     slug: 'cheaper-alternatives-to-monday-com',
-    title: 'Cheaper Alternatives To Monday Com',
+    title: 'Cheaper Alternatives to Monday.com for UK Small Teams',
     topic: 'productivity',
-    excerpt: "Cheaper Alternatives to Monday.com for UK Small Teams (2026 Guide)",
+    excerpt: 'Monday.com is polished but pricey. These alternatives deliver the same core features for significantly less — some for free.',
     date: '2026-05-09',
-  }
+  },,
 ];
 // ── Topic registry ────────────────────────────────────────────────────────────
 // AI MAINTENANCE: Add new topics here as the article library grows.
