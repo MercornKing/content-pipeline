@@ -91,7 +91,14 @@ const ARTICLES = [
     topic: 'productivity',
     excerpt: 'Notion is collaborative and structured. Obsidian is private and powerful. The right choice depends on how your brain works.',
     date: '2026-05-09',
-  },
+  },,
+  {
+    slug: 'cheaper-alternatives-to-monday-com',
+    title: 'Cheaper Alternatives To Monday Com',
+    topic: 'productivity',
+    excerpt: "Cheaper Alternatives to Monday.com for UK Small Teams (2026 Guide)",
+    date: '2026-05-09',
+  }
 ];
 // ── Topic registry ────────────────────────────────────────────────────────────
 // AI MAINTENANCE: Add new topics here as the article library grows.
