@@ -32,7 +32,7 @@ from markdownify import markdownify
 # Paths
 ROOT         = Path(__file__).parent
 DRAFTS_DIR   = ROOT / "drafts"
-ARTICLES_DIR = ROOT / "articles"
+ARTICLES_DIR = ROOT / "content" / "articles"
 SITE_JS      = ROOT / "content" / "site.js"
 LINKS_FILE   = ROOT / "affiliate_links.json"
 TOPIC_MAP    = ROOT / "topic_map.json"
@@ -218,7 +218,7 @@ def process_file(docx_path, links, force=False):
     markdown = add_frontmatter(markdown, docx_path.name, topic, excerpt, date)
     ARTICLES_DIR.mkdir(parents=True, exist_ok=True)
     out_path.write_text(markdown, encoding="utf-8")
-    log.info(f"  Written to articles/{slug}.md")
+    log.info(f"  Written to content/articles/{slug}.md")
 
     update_site_js(slug, title, topic, excerpt, date)
 
