@@ -99,6 +99,13 @@ const ARTICLES = [
     excerpt: 'Monday.com is polished but pricey. These alternatives deliver the same core features for significantly less — some for free.',
     date: '2026-05-09',
   },
+  {
+    slug: 'best-time-tracking-apps-for-remote-teams',
+    title: 'Best Time Tracking Apps For Remote Teams',
+    topic: 'general',
+    excerpt: "Best Time Tracking Apps for Remote Teams (2026 UK Guide)",
+    date: '2026-05-09',
+  }
 ];
 
 // ── Topic registry ────────────────────────────────────────────────────────────
