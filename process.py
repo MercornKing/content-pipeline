@@ -62,14 +62,16 @@ def load_affiliate_links():
     if not LINKS_FILE.exists():
         log.warning("affiliate_links.json not found — no links injected.")
         return {}
-    with LINKS_FILE.open() as f:
+    with LINKS_FILE.open(encoding="utf-8") as f:
         raw = json.load(f)
-    return {k.lower(): v for k, v in raw.items() if not k.startswith("_")}
+    links = {k.lower().strip(): v for k, v in raw.items() if not k.startswith("_")}
+    log.info(f"Loaded {len(links)} affiliate link(s)")
+    return links
 
 def infer_topic(slug, title):
     keywords = dict(DEFAULT_TOPIC_KEYWORDS)
     if TOPIC_MAP.exists():
-        with TOPIC_MAP.open() as f:
+        with TOPIC_MAP.open(encoding="utf-8") as f:
             keywords.update(json.load(f))
     haystack = (slug + " " + title).lower()
     for topic, kws in keywords.items():
@@ -124,27 +126,53 @@ def docx_to_markdown(docx_path):
     return re.sub(r"\n{3,}", "\n\n", md).strip()
 
 def inject_affiliate_links(markdown, links):
+    """
+    Replace every 'Product Name [AFFILIATE LINK]' with a Markdown hyperlink.
+
+    Three-stage matching (most to least specific):
+      1. Exact lowercase match on the product name
+      2. Strip trailing markdown/punctuation characters, try again
+      3. Longest key that is a substring of the product name
+
+    Unmatched placeholders are left unchanged and logged as warnings.
+    Updated from original single-pass line-context approach to improve
+    match rate, particularly for product names with punctuation variations.
+    """
+    pattern = re.compile(r'([^\[\n]{2,80}?)\s*\[AFFILIATE LINK\]', re.IGNORECASE)
     warnings = []
-    lines = markdown.split("\n")
-    output = []
-    for i, line in enumerate(lines):
-        if "[AFFILIATE LINK]" in line:
-            context = (lines[i - 1] + " " + line).lower() if i > 0 else line.lower()
-            matched_url = matched_key = None
-            for key in sorted(links.keys(), key=len, reverse=True):
-                if key in context:
-                    matched_url = links[key]
-                    matched_key = key
-                    break
-            if matched_url:
-                line = line.replace("[AFFILIATE LINK]", matched_url)
-                log.info(f"  Injected '{matched_key}' on line {i + 1}")
-            else:
-                msg = f"Line {i + 1}: no match for [AFFILIATE LINK] near: '{context[:80]}'"
-                warnings.append(msg)
-                log.warning(f"  {msg}")
-        output.append(line)
-    return "\n".join(output), warnings
+    count = 0
+
+    def replace(m):
+        nonlocal count
+        name = m.group(1).strip()
+        key  = name.lower()
+
+        # Stage 1: exact match
+        url = links.get(key)
+
+        # Stage 2: strip trailing punctuation/markdown
+        if not url:
+            cleaned = re.sub(r'[\*_`#>\-]+$', '', key).strip()
+            url = links.get(cleaned)
+
+        # Stage 3: longest substring match
+        if not url:
+            candidates = [k for k in links if k in key]
+            if candidates:
+                url = links[max(candidates, key=len)]
+
+        if url:
+            count += 1
+            log.info(f"  Injected link for '{name}'")
+            return f"[{name}]({url})"
+        else:
+            msg = f"No affiliate link matched for: '{name}'"
+            warnings.append(msg)
+            log.warning(f"  {msg}")
+            return m.group(0)
+
+    result = pattern.sub(replace, markdown)
+    return result, warnings
 
 def add_frontmatter(markdown, source_filename, topic, excerpt, date):
     title_match = re.search(r"^#\s+(.+)$", markdown, re.MULTILINE)
@@ -159,7 +187,6 @@ def update_site_js(slug, title, topic, excerpt, date):
         return False
     js_text = SITE_JS.read_text(encoding="utf-8")
 
-    # Check if already registered
     if f"slug: '{slug}'" in js_text:
         log.info(f"  site.js already has '{slug}' — skipping")
         return True
@@ -176,7 +203,6 @@ def update_site_js(slug, title, topic, excerpt, date):
         f"  }}"
     )
 
-    # Find the closing ]; of the ARTICLES array and insert before it
     updated = re.sub(
         r"(const ARTICLES\s*=\s*\[)([\s\S]*?)(\];)",
         lambda m: m.group(1) + m.group(2).rstrip(",\n ") + ",\n" + new_entry + "\n];",
@@ -236,7 +262,6 @@ def main():
     ARTICLES_DIR.mkdir(parents=True, exist_ok=True)
 
     links = load_affiliate_links()
-    log.info(f"Loaded {len(links)} affiliate link(s)")
 
     files = [DRAFTS_DIR / args.file] if args.file else sorted(DRAFTS_DIR.glob("*.docx"))
     if not files:
