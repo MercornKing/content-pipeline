@@ -1,17 +1,28 @@
 name: Process Drafts
 
+# ── Triggers ──────────────────────────────────────────────────────────────────
+# Fires on new or updated .docx drafts only.
+# affiliate_links.json changes are handled by relink-articles.yml —
+# keeping the two concerns separate avoids workflow races.
 on:
   push:
     paths:
       - "drafts/**.docx"
-      - "affiliate_links.json"
   workflow_dispatch:
     inputs:
       force:
-        description: "Reprocess all files"
+        description: "Reprocess all drafts (ignore existing output)"
         required: false
         default: "false"
 
+# ── Concurrency ───────────────────────────────────────────────────────────────
+# Queue consecutive draft pushes rather than running them in parallel,
+# to avoid site.js write conflicts when multiple articles land at once.
+concurrency:
+  group: process-drafts
+  cancel-in-progress: false
+
+# ── Job ───────────────────────────────────────────────────────────────────────
 jobs:
   process:
     runs-on: ubuntu-latest
@@ -26,11 +37,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
 
+      # AI MAINTENANCE: add new pip packages here if process.py gains new imports
       - name: Install dependencies
-        run: pip install python-docx markdownify
+        run: pip install python-docx markdownify lxml
 
-      - name: Run processor
+      # Converts .docx files, injects known affiliate links, updates site.js,
+      # and writes missing_links.json for any unresolved products.
+      - name: Process drafts
         run: |
           if [ "${{ github.event.inputs.force }}" = "true" ]; then
             python process.py --force
@@ -38,11 +53,13 @@ jobs:
             python process.py
           fi
 
+      # Commits new/updated articles, site.js, and missing_links.json.
+      # Skips silently if nothing changed (idempotent).
       - name: Commit output
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add content/articles/ content/site.js
-          git diff --cached --quiet && echo "No changes" && exit 0
-          git commit -m "chore: publish new article [skip ci]"
+          git add content/articles/ content/site.js missing_links.json
+          git diff --cached --quiet && echo "No changes to commit." && exit 0
+          git commit -m "chore: publish new article(s) [skip ci]"
           git push

@@ -138,7 +138,7 @@ def inject_affiliate_links(markdown, links):
     Updated from original single-pass line-context approach to improve
     match rate, particularly for product names with punctuation variations.
     """
-    pattern = re.compile(r'([^\[\n]{2,80}?)\s*\[AFFILIATE LINK\]', re.IGNORECASE)
+    pattern = re.compile(r'([^\[\n]{2,120})\s*\[AFFILIATE LINK\]', re.IGNORECASE)
     warnings = []
     count = 0
 
@@ -213,12 +213,38 @@ def update_site_js(slug, title, topic, excerpt, date):
         log.warning("  Could not find ARTICLES array in site.js")
         return False
 
+    # Keep articleCount in sync if it exists in the file
+    count = len(re.findall(r"slug:", updated))
+    updated = re.sub(r"(articleCount:\s*)\d+", f"\\g<1>{count}", updated)
+
     SITE_JS.write_text(updated, encoding="utf-8")
-    log.info(f"  Updated site.js with '{slug}'")
+    log.info(f"  Updated site.js with '{slug}', articleCount -> {count}")
     return True
 
+def title_to_slug(title):
+    """
+    Convert an article H1 title to a short, stable URL slug.
+    Strips em-dash subtitles and trailing years so the slug matches
+    hand-curated slugs already in site.js.
+    Examples:
+      'Monday.com Review for Small Business (2026)'  -> 'monday-com-review-for-small-business'
+      'Best Email Tools — UK Guide'                  -> 'best-email-tools'
+    """
+    base = re.split(r'\s*[—–]\s*|\s+-\s+', title)[0].strip()
+    base = re.sub(r'\s+\d{4}$', '', base).strip()
+    base = re.sub(r'\s*\(.*?\)$', '', base).strip()  # strip trailing parentheticals
+    return re.sub(r'[^a-z0-9]+', '-', base.lower()).strip('-')
+
+
 def process_file(docx_path, links, force=False):
-    slug = re.sub(r"[^a-z0-9]+", "-", docx_path.stem.lower()).strip("-")
+    # Derive slug from H1 title so it matches hand-curated slugs in site.js.
+    _slug_fallback = re.sub(r"[^a-z0-9]+", "-", docx_path.stem.lower()).strip("-")
+    try:
+        _preview_md  = docx_to_markdown(docx_path)
+        _title_match = re.search(r"^#\s+(.+)$", _preview_md, re.MULTILINE)
+        slug = title_to_slug(_title_match.group(1)) if _title_match else _slug_fallback
+    except Exception:
+        slug = _slug_fallback
     out_path = ARTICLES_DIR / f"{slug}.md"
 
     if out_path.exists() and not force:

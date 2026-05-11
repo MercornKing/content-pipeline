@@ -101,16 +101,16 @@ const ARTICLES = [
   },
   {
     slug: 'best-time-tracking-apps-for-remote-teams',
-    title: 'Best Time Tracking Apps For Remote Teams',
-    topic: 'general',
-    excerpt: "Best Time Tracking Apps for Remote Teams (2026 UK Guide)",
+    title: 'Best Time Tracking Apps for Remote Teams',
+    topic: 'productivity',
+    excerpt: 'Toggl, Clockify, or Harvest? The best time tracking apps for remote teams compared on features, price, and how well they handle the UK market.',
     date: '2026-05-09',
   },
   {
     slug: 'freshbooks-review-for-sole-traders',
-    title: 'Freshbooks Review For Sole Traders',
+    title: 'FreshBooks Review for Sole Traders UK',
     topic: 'finance',
-    excerpt: "FreshBooks Review for Sole Traders UK (2026)",
+    excerpt: "FreshBooks pitches itself as the accounting tool built for people who work alone. We tested it as a UK sole trader to find out if that's true.",
     date: '2026-05-09',
   }
 ];

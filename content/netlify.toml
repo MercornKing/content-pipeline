@@ -1,4 +1,20 @@
+# netlify.toml — WorkSmart Reviews
+# Publish directory: content/
+# Articles served from content/articles/, accessible at /articles/
+
+[build]
+  publish = "content"
+
+# Serve processed Markdown articles with correct content-type
 [[headers]]
-  for = "/*.md"
+  for = "/articles/*.md"
   [headers.values]
     Content-Type = "text/plain; charset=utf-8"
+    Access-Control-Allow-Origin = "*"
+
+# Security headers for all other responses
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"

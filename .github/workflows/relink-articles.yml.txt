@@ -1,0 +1,113 @@
+name: Relink Articles
+
+# ── Trigger ───────────────────────────────────────────────────────────────────
+# Fires whenever affiliate_links.json is pushed — whether updated manually,
+# by the affiliate_linker.py tool, or by any other means.
+# Also available as a manual dispatch for forcing a full relink at any time.
+on:
+  push:
+    paths:
+      - "affiliate_links.json"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — show what would change without writing files"
+        required: false
+        default: "false"
+
+# ── Concurrency ───────────────────────────────────────────────────────────────
+# If a second affiliate_links.json push arrives while this is running,
+# cancel the in-progress run and start fresh with the latest file.
+concurrency:
+  group: relink-articles
+  cancel-in-progress: true
+
+# ── Job ───────────────────────────────────────────────────────────────────────
+jobs:
+  relink:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # ── 1. Checkout ───────────────────────────────────────────────────────────
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # ── 2. Python ─────────────────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      # ── 3. Dependencies ───────────────────────────────────────────────────────
+      - name: Install dependencies
+        run: pip install python-docx markdownify lxml
+
+      # ── 4. Relink ─────────────────────────────────────────────────────────────
+      # Runs process.py --relink which:
+      #   - Re-injects affiliate links into every .md in content/articles/
+      #   - Writes missing_links.json listing any still-unresolved products
+      #   - Exits 0 if all resolved, exits 2 if any links are still missing
+      #     (exit 2 is treated as a warning, not a failure — articles are
+      #      still updated with whatever links were found)
+      - name: Re-inject affiliate links
+        id: relink
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            echo "DRY RUN — listing unresolved links only, no files written"
+            python process.py --relink --dry-run 2>&1 || true
+          else
+            python process.py --relink
+            echo "exit_code=$?" >> $GITHUB_OUTPUT
+          fi
+
+      # ── 5. Report missing links ───────────────────────────────────────────────
+      # If missing_links.json has unresolved products, print them to the
+      # Actions log as a clear summary so you can see what's needed at a glance.
+      - name: Report any unresolved links
+        if: always()
+        run: |
+          if [ -f missing_links.json ]; then
+            STATUS=$(python3 -c "
+          import json, sys
+          d = json.load(open('missing_links.json'))
+          if d.get('_status') == 'all resolved':
+              print('ALL_RESOLVED')
+          else:
+              items = [(k,v) for k,v in d.items()
+                       if not k.startswith('_') and isinstance(v,dict)
+                       and str(v.get('affiliate_link','')).startswith('PASTE')]
+              print(f'MISSING:{len(items)}')
+              for k,v in sorted(items):
+                  print(f'  - {v.get(\"product_name\", k)}')
+                  print(f'    key: {k}')
+                  print(f'    search: {v.get(\"amazon_search_url\",\"\")}')
+            ")
+            if echo "$STATUS" | grep -q "ALL_RESOLVED"; then
+              echo "✓ All affiliate links resolved."
+            else
+              COUNT=$(echo "$STATUS" | grep -oP '(?<=MISSING:)\d+')
+              echo "⚠ $COUNT product(s) still need affiliate links."
+              echo "  Run: python affiliate_linker.py"
+              echo ""
+              echo "$STATUS" | grep -v "^MISSING:"
+            fi
+          fi
+
+      # ── 6. Commit updated articles ────────────────────────────────────────────
+      # Only commits if article content actually changed.
+      # Skips silently if nothing changed (idempotent — safe to re-run).
+      # [skip ci] prevents this commit triggering further workflow runs.
+      - name: Commit relinked articles
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add content/articles/ missing_links.json
+          git diff --cached --quiet && echo "No article content changed." && exit 0
+          # Count how many articles were updated
+          CHANGED=$(git diff --cached --name-only | grep "content/articles/" | wc -l | tr -d ' ')
+          git commit -m "chore: relink affiliate links in ${CHANGED} article(s) [skip ci]"
+          git push
