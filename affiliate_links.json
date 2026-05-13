@@ -1,7 +1,7 @@
 {
   "_comment": "Add your affiliate links here. Keys are matched case-insensitively against the product name on the line preceding each [AFFILIATE LINK] placeholder.",
   "mailchimp": "https://YOUR_AFFILIATE_LINK/mailchimp",
-  "mailerlite": "https://YOUR_AFFILIATE_LINK/mailerlite",
+  "mailerlite": "https://www.mailerlite.com/?linkId=lp_170762&sourceId=agenticreviews&tenantId=mailerlite",
   "brevo": "https://YOUR_AFFILIATE_LINK/brevo",
   "monday": "https://YOUR_AFFILIATE_LINK/monday",
   "monday.com": "https://YOUR_AFFILIATE_LINK/monday",
